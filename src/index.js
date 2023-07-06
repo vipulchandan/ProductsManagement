@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 const multer = require('multer');
 
 const userRoutes = require('./routes/UserRoute');
+const productRoutes = require('./routes/ProductRoute');
 
 dotenv.config();
 const app = express();
@@ -24,6 +25,7 @@ mongoose.connect(process.env.MONGO_URI, {
 });
 
 app.use('/api/auth', userRoutes);
+app.use('/api/products', productRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
