@@ -144,7 +144,7 @@ const createProduct = async (req, res) => {
             });
         }
 
-        const newUser = await ProductModel.create({
+        const newProduct = await ProductModel.create({
             title,
             description,
             price,
@@ -160,7 +160,7 @@ const createProduct = async (req, res) => {
         return res.status(201).json({
             status: true,
             message: "Product created successfully",
-            data: newUser
+            data: newProduct
         })
 
     } catch (err) {
