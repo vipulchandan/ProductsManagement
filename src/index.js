@@ -6,6 +6,7 @@ const multer = require('multer');
 const userRoutes = require('./routes/UserRoute');
 const productRoutes = require('./routes/ProductRoute');
 const cartRoutes = require('./routes/CartRoute');
+const orderRoutes = require('./routes/OrderRoute');
 
 dotenv.config();
 const app = express();
@@ -28,6 +29,7 @@ mongoose.connect(process.env.MONGO_URI, {
 app.use('/api/auth', userRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api', cartRoutes);
+app.use('/api', orderRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
