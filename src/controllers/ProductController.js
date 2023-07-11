@@ -1,38 +1,7 @@
 const mongoose = require("mongoose");
 const ProductModel = require("../models/ProductModel");
-const AWS = require('aws-sdk');
+const { uploadProductImage } = require("../utils/awsConfig");
 
-// AWS configuration
-AWS.config.update({
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    region: "ap-south-1"
-})
-
-// S3 configuration for upload image
-const uploadFile = async (file) => {
-    try {
-      const s3 = new AWS.S3({ apiVersion: '2006-03-01' });
-  
-      const uploadParams = {
-        ACL: 'public-read',
-        Bucket: 'classroom-training-bucket',
-        Key: 'product/' + file.originalname,
-        Body: file.buffer,
-        ContentType: file.mimetype
-      };
-  
-      const uploadResult = await s3.upload(uploadParams).promise();
-  
-      console.log(uploadResult);
-      console.log('File uploaded successfully');
-  
-      return uploadResult.Location;
-    } catch (error) {
-      console.error('Error uploading file:', error);
-      throw error;
-    }
-};
 
 const createProduct = async (req, res) => {
     try {
@@ -107,7 +76,7 @@ const createProduct = async (req, res) => {
         // productImage upload validation
         if(files && files.length > 0) {
             const file = files[0];
-            const fileUrl = await uploadFile(file);
+            const fileUrl = await uploadProductImage(file);
             req.body.productImage = fileUrl;
         } else {
             return res.status(400).json({
@@ -287,7 +256,7 @@ const updateProduct = async (req, res) => {
 
         if(files && files.length > 0) {
             const file = files[0];
-            const fileUrl = await uploadFile(file);
+            const fileUrl = await uploadProductImage(file);
             req.body.productImage = fileUrl;
         }
 

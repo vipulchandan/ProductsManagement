@@ -19,7 +19,7 @@ Get product(s) details in response body
 const addToCart = async (req, res) => {
     try {
         const { userId } = req.params;
-        const { productId, cartId } = req.body;
+        let { productId, quantity, cartId } = req.body;
         const userIdFromToken = req.userId;
 
         // Check if the userId is valid
@@ -47,6 +47,23 @@ const addToCart = async (req, res) => {
             });
         }
 
+        // Check if the productId is valid
+        if(!mongoose.Types.ObjectId.isValid(productId)) {
+            return res.status(400).json({
+                status: false,
+                message: "Invalid productId"
+            });
+        }
+        
+        // Check if the product exists
+        const product = await Product.findOne({ _id: productId, isDeleted: false });
+        if(!product) {
+            return res.status(404).json({
+                status: false,
+                message: "Product not found"
+            });
+        }
+
         let cart;
         if(cartId) {
             // If cartId is provided in the request body, find the cart by cartId
@@ -62,41 +79,33 @@ const addToCart = async (req, res) => {
             // Create a new cart if it doesn't exist
             cart = new Cart({
                 userId,
-                items: [],
-                totalPrice: 0,
-                totalItems: 0,
+                items: [{ productId, quantity }],
+                totalPrice: product.price * quantity,
+                totalItems: quantity,
             });
-        }
-
-        // Check if the product exists
-        const product = await Product.findOne({ _id: productId, isDeleted: false });
-        if(!product) {
-            return res.status(404).json({
-                status: false,
-                message: "Product not found"
-            });
-        }
-
-        const existingCartItem = cart.items.find(item => item.productId.toString() === productId);
-
-        if(existingCartItem) {
-            // If the item already exists in the cart, increase its quantity by 1
-            existingCartItem.quantity += 1;
         } else {
-            // If the item doesn't exist, create a new item with quantity 1
-            cart.items.push({
-                productId,
-                quantity: 1
-            });
-            // cart.items.addToSet({  // The addToSet method adds an item to an array only if it doesn't already exist in the array
-            //     productId,
-            //     quantity: 1
-            // });
-        }
+            // Check if the product already exists in the cart
+            const existingCartItem = cart.items.find(item => item.productId.toString() === productId);
 
-        // Update total price and total items
-        cart.totalItems += 1;
-        cart.totalPrice += product.price;
+            if(existingCartItem) {
+                // If the item already exists in the cart, increase its quantity by 1
+                existingCartItem.quantity += Number(quantity);
+            } else {
+                // If the item doesn't exist, create a new item with quantity that is in request body
+                cart.items.push({
+                    productId,
+                    quantity
+                });
+                // cart.items.addToSet({  // The addToSet method adds an item to an array only if it doesn't already exist in the array
+                //     productId,
+                //     quantity: 1
+                // });
+            }
+
+            // Update total price and total items
+            cart.totalItems += Number(quantity);
+            cart.totalPrice += product.price * quantity;
+        }
 
         await cart.save();
 
@@ -104,63 +113,7 @@ const addToCart = async (req, res) => {
             status: true,
             message: "Product added to cart",
             cart
-        })
-
-        /*
-        // Check if the cart exists for the user
-        let cart = await Cart.findOne({ userId: userId });
-        if(!cart) {
-            // Create a new cart if it doesn't exist
-            // cart = new Cart({ userId: userId });
-            cart = new Cart({ userId, items: [], totalPrice: 0, totalItems: 0 });
-        }
-
-        // Check if the product(s) are valid and not deleted
-        // const product = await Product.findOne({ _id: productId, isDeleted: false });
-        // if(!product) {
-        //     return res.status(404).json({
-        //         status: false,
-        //         message: "Product not found"
-        //     });
-        // }
-
-        const products = await Product.find({ _id: { $in: productId }, isDeleted: false });
-        if(products.length !== productId.length) {
-            return res.status(404).json({
-                status: false,
-                message: "Product(s) not found"
-            });
-        }
-        
-        // Add product(s) to the cart
-        // cart.items.push(...products)
-        // cart.items = [...cart.items, ...products];
-        cart.items.push(...productId.map(product => ({ productId: product._id, quantity: 1 })));
-
-        // Update total price and total items in the cart
-        // cart.totalPrice = cart.items.reduce((acc, item) => {
-        //     return acc + item.price * item.quantity;
-        // }, 0);
-        cart.totalPrice = cart.items.reduce((total, item) => {
-            const product = products.find(product => product._id.toString() === item.productId);
-            if(product) {
-                total += product.price * item.quantity;
-                // total += product.price;
-            }
-            return total;
-        }, 0);
-        cart.totalItems = cart.items.length;
-
-        // Save the cart
-        await cart.save();
-
-        return res.status(200).json({
-            status: true,
-            message: "Cart added successfully",
-            cartId: cart._id,
-            cart: cart
-        })
-        */
+        });
         
     } catch (err) {
         return res.status(500).json({
@@ -217,6 +170,14 @@ const updateCart = async (req, res) => {
             });
         }
 
+        // Check if the cartId is valid
+        if(!mongoose.Types.ObjectId.isValid(cartId)) {
+            return res.status(400).json({
+                status: false,
+                message: "Invalid cartId"
+            });
+        }
+
         // Check if the cart exists
         let cart = await Cart.findOne({ _id: cartId, userId });
         if(!cart) {
@@ -226,6 +187,13 @@ const updateCart = async (req, res) => {
             });
         }
 
+        // Check if the productId is valid
+        if(!mongoose.Types.ObjectId.isValid(productId)) {
+            return res.status(400).json({
+                status: false,
+                message: "Invalid productId"
+            });
+        }
         // Check if the product exists
         const product = await Product.findOne({ _id: productId, isDeleted: false });
         if(!product) {
@@ -255,11 +223,17 @@ const updateCart = async (req, res) => {
         } else if(removeProduct === 1) {
 
             if (item.quantity > 1) {
-                // If removeProduct is 1, delete the product from the cart
+                // If removeProduct is greater than 1, decrement the quantity of the product by 1
                 item.quantity -= 1;
                 // Update total price and total items
                 cart.totalItems -= 1;
                 cart.totalPrice -= product.price;
+            } else {
+                // If removeProduct is 1, delete the product from the cart
+                cart.items = cart.items.filter(item => item.productId.toString() !== productId);
+                // empty total price and total items
+                cart.totalItems = cart.items.length;
+                cart.totalPrice = cart.totalItems * product.price;
             }
         }
 

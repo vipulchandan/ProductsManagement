@@ -1,5 +1,10 @@
 const express = require('express');
-const { addToCart, updateCart, getCartSummary, deleteCart } = require('../controllers/CartController');
+const { 
+    addToCart, 
+    updateCart, 
+    getCartSummary, 
+    deleteCart 
+} = require('../controllers/CartController');
 const { auth } = require('../middlewares/auth');
 const router = express.Router();
 

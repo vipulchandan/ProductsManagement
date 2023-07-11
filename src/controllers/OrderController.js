@@ -94,13 +94,27 @@ const createOrder = async (req, res) => {
             });
         }
 
-        // Get cart details in the request body
+        // Check if the userId is valid
+        if(!mongoose.Types.ObjectId.isValid(cartId)) {
+            return res.status(400).json({
+                status: false,
+                message: "Invalid cartId"
+            });
+        }
         // Retrieve the cart based on the cartId provided
         const cart = await Cart.findOne({ _id: cartId });
         if(!cart) {
             return res.status(404).json({
                 status: false,
                 message: "Cart not found"
+            });
+        }
+
+        // Check if cart belongs to the user
+        if(cart.userId.toString() !== userId) {
+            return res.status(401).json({
+                status: false,
+                message: "Unauthorized! You are not allowed to create Order. Please check your cart"
             });
         }
 
@@ -112,45 +126,47 @@ const createOrder = async (req, res) => {
             });
         }
 
-        // Fetch the product details for the cart items
-        const products = await Product.find({ 
-            _id: { $in: cart.items.map(item => item.productId) }, 
-            isDeleted: false 
-        });
+        // // Fetch the product details for the cart items
+        // const products = await Product.find({ 
+        //     _id: { $in: cart.items.map(item => item.productId) }, 
+        //     isDeleted: false 
+        // });
 
-        // Map the product details to the order items
-        const orderItems = cart.items.map(item => {
-            const product = products.find(product => product._id.toString() === item.productId);
-            return {
-                productId: item.productId,
-                quantity: item.quantity,
-                product: product
-            }
-        });
+        // // Map the product details to the order items
+        // const orderItems = cart.items.map(item => {
+        //     const product = products.find(product => product._id.toString() === item.productId);
+        //     return {
+        //         productId: item.productId,
+        //         quantity: item.quantity,
+        //         product: product
+        //     }
+        // });
 
-        // Calculate the total price, total items, and total quantity for the order
-        const totalPrice = cart.totalPrice;
-        const totalItems = cart.totalItems;
-        const totalQuantity = cart.items.reduce((acc, item) => acc + item.quantity, 0);
+        // // Calculate the total price, total items, and total quantity for the order
+        // const totalPrice = cart.totalPrice;
+        // const totalItems = cart.totalItems;
+        // const totalQuantity = cart.items.reduce((acc, item) => acc + item.quantity, 0);
 
-        // Create the order
-        // Create a new Order document with the required fields
+        // // Create the order
+        // const order = new Order({
+        //     userId,
+        //     items: orderItems,
+        //     totalPrice,
+        //     totalItems,
+        //     totalQuantity,
+        //     // cancellable: true,
+        //     // status: 'pending',
+        // });
+
         const order = new Order({
             userId,
-            items: orderItems,
-            totalPrice,
-            totalItems,
-            totalQuantity,
-            // cancellable: true,
-            // status: 'pending',
+            items: cart.items,
+            totalPrice: cart.totalPrice,
+            totalItems: cart.totalItems,
+            totalQuantity: cart.items.reduce((acc, item) => acc + item.quantity, 0),
         });
 
         await order.save();
-
-        // Delete the cart - Mark the cart as deleted
-        // cart.isDeleted = true;
-        // cart.deletedAt = new Date();        
-        // await cart.save();
 
         // Empty the cart
         cart.items = [];
@@ -259,12 +275,6 @@ const updateOrder = async (req, res) => {
                 message: "Order is not cancellable"
             });
         }
-        // if(!order.cancellable) {
-        //     return res.status(400).json({
-        //         status: false,
-        //         message: "Order is not cancellable"
-        //     });
-        // }
 
         order.status = status;
         await order.save();

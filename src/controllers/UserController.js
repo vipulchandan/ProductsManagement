@@ -1,41 +1,9 @@
 const UserModel = require('../models/UserModel');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const AWS = require('aws-sdk');
 const mongoose = require('mongoose');
+const { uploadUserProfile } = require('../utils/awsConfig');
 
-
-// AWS configuration
-AWS.config.update({
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    region: "ap-south-1"
-})
-
-// S3 configuration for upload image
-const uploadFile = async (file) => {
-    try {
-      const s3 = new AWS.S3({ apiVersion: '2006-03-01' });
-  
-      const uploadParams = {
-        ACL: 'public-read',
-        Bucket: 'classroom-training-bucket',
-        Key: 'user/' + file.originalname,
-        Body: file.buffer,
-        ContentType: file.mimetype
-      };
-  
-      const uploadResult = await s3.upload(uploadParams).promise();
-  
-      console.log(uploadResult);
-      console.log('File uploaded successfully');
-  
-      return uploadResult.Location;
-    } catch (error) {
-      console.error('Error uploading file:', error);
-      throw error;
-    }
-};
 /*
 POST /register
 Create a user document from request body. Request body must contain image.
@@ -50,7 +18,7 @@ const registerUser = async (req, res) => {
         // profileImage upload validation
         if(files && files.length > 0) {
             const file = files[0];
-            const fileUrl = await uploadFile(file);
+            const fileUrl = await uploadUserProfile(file);
             req.body.profileImage = fileUrl;
         } else {
             return res.status(400).json({
@@ -410,7 +378,7 @@ const updateUserProfile = async (req, res) => {
         // profileImage upload validation
         if(files && files.length > 0) {
             const file = files[0];
-            const fileUrl = await uploadFile(file);
+            const fileUrl = await uploadUserProfile(file);
             req.body.profileImage = fileUrl;
         }
 
