@@ -11,7 +11,7 @@ const auth = async (req, res, next) => {
             });
         }
 
-        const token = authHeader.split(' ')[1];
+        const token = authHeader.split(' ')[1];  // Bearer sdcjksdnckljsdnvkdsnvlk
         
         // const token = req.headers['x-api-key'];
         // if(!token) {

@@ -41,7 +41,7 @@ const addToCart = async (req, res) => {
 
         // Check if the userId in params and in JWT token match
         if(user._id.toString() !== userIdFromToken) {
-            return res.status(401).json({
+            return res.status(403).json({
                 status: false,
                 message: "Unauthorized! You are not the owner of this cart"
             });
@@ -88,7 +88,7 @@ const addToCart = async (req, res) => {
             const existingCartItem = cart.items.find(item => item.productId.toString() === productId);
 
             if(existingCartItem) {
-                // If the item already exists in the cart, increase its quantity by 1
+                // If the item already exists in the cart, increase its quantity by whatever the quantity that we provide in the request body
                 existingCartItem.quantity += Number(quantity);
             } else {
                 // If the item doesn't exist, create a new item with quantity that is in request body
@@ -164,7 +164,7 @@ const updateCart = async (req, res) => {
 
         // Check if the userId in params and in JWT token match
         if(user._id.toString() !== userIdFromToken) {
-            return res.status(401).json({
+            return res.status(403).json({
                 status: false,
                 message: "Unauthorized! You are not the owner of this cart"
             });
@@ -213,13 +213,11 @@ const updateCart = async (req, res) => {
         }
 
         if(removeProduct === 0) {
-            // If removeProduct is 0, decrement the quantity of the product by 1
+            // If removeProduct is 0, remove the product from the cart
             cart.items = cart.items.filter(item => item.productId.toString() !== productId);
             // empty total price and total items
-            cart.totalItems = cart.items.length;
-            cart.totalPrice = cart.totalItems * product.price;
-            // cart.totalItems -= item.quantity;
-            // cart.totalPrice -= item.quantity * product.price;
+            cart.totalItems -= item.quantity;
+            cart.totalPrice -= item.quantity * product.price;
         } else if(removeProduct === 1) {
 
             if (item.quantity > 1) {
@@ -229,11 +227,11 @@ const updateCart = async (req, res) => {
                 cart.totalItems -= 1;
                 cart.totalPrice -= product.price;
             } else {
-                // If removeProduct is 1, delete the product from the cart
+                // If removeProduct is 1 and if we decrement it one more time then, delete the product from the cart
                 cart.items = cart.items.filter(item => item.productId.toString() !== productId);
                 // empty total price and total items
-                cart.totalItems = cart.items.length;
-                cart.totalPrice = cart.totalItems * product.price;
+                cart.totalItems -= item.quantity;
+                cart.totalPrice -= item.quantity * product.price;
             }
         }
 
