@@ -26,6 +26,10 @@ mongoose.connect(process.env.MONGO_URI, {
     console.log(err);
 });
 
+app.get('/', (req, res) => {
+    res.json('Welcome To Shopping Cart!');
+})
+
 app.use('/api/auth', userRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api', cartRoutes);
