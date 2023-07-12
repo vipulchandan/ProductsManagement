@@ -214,7 +214,7 @@ const updateCart = async (req, res) => {
 
         if(removeProduct === 0) {
             // If removeProduct is 0, remove the product from the cart
-            cart.items = cart.items.filter(item => item.productId.toString() !== productId);
+            cart.items = cart.items.filter(item => item.productId.toString() !== productId); // The filter() method is used on the cart.items array to create a new array that excludes any item whose productId matches the provided productId and include all other items whose productId not match the provided productId
             // empty total price and total items
             cart.totalItems -= item.quantity;
             cart.totalPrice -= item.quantity * product.price;
