@@ -16,57 +16,6 @@ const createOrder = async (req, res) => {
         const { userId } = req.params;
         const { cartId } = req.body;
         const userIdFromToken = req.userId;
-
-        // // items validation
-        // if(!items) {
-        //     return res.status(400).json({
-        //         status: false,
-        //         message: "Items is required"
-        //     });
-        // }
-
-        // if(!items.productId) {
-        //     return res.status(400).json({
-        //         status: false,
-        //         message: "Product id is required"
-        //     });
-        // }
-        // if(!items.quantity) {
-        //     return res.status(400).json({
-        //         status: false,
-        //         message: "Quantity is required"
-        //     });
-        // }
-        // if(items.quantity < 1) {
-        //     return res.status(400).json({
-        //         status: false,
-        //         message: "Quantity must be greater than 0"
-        //     });
-        // }
-
-        // // totalQuantity validation
-        // if(!totalQuantity) {
-        //     return res.status(400).json({
-        //         status: false,
-        //         message: "Total quantity is required"
-        //     });
-        // }
-
-        // // totalItems validation
-        // if(!totalItems) {
-        //     return res.status(400).json({
-        //         status: false,
-        //         message: "Total items is required"
-        //     });
-        // }
-
-        // // totalPrice validation
-        // if(!totalPrice) {
-        //     return res.status(400).json({
-        //         status: false,
-        //         message: "Total price is required"
-        //     });
-        // }
         
 
         // Check if the userId is valid
@@ -88,7 +37,7 @@ const createOrder = async (req, res) => {
 
         // Check if the userId in params and in JWT token match
         if(user._id.toString() !== userIdFromToken) {
-            return res.status(401).json({
+            return res.status(403).json({
                 status: false,
                 message: "Unauthorized! You are not allowed to create Order"
             });
@@ -112,7 +61,7 @@ const createOrder = async (req, res) => {
 
         // Check if cart belongs to the user
         if(cart.userId.toString() !== userId) {
-            return res.status(401).json({
+            return res.status(403).json({
                 status: false,
                 message: "Unauthorized! You are not allowed to create Order. Please check your cart"
             });
@@ -125,38 +74,6 @@ const createOrder = async (req, res) => {
                 message: "Your cart is empty. Please add items to your cart for checkout!"
             });
         }
-
-        // // Fetch the product details for the cart items
-        // const products = await Product.find({ 
-        //     _id: { $in: cart.items.map(item => item.productId) }, 
-        //     isDeleted: false 
-        // });
-
-        // // Map the product details to the order items
-        // const orderItems = cart.items.map(item => {
-        //     const product = products.find(product => product._id.toString() === item.productId);
-        //     return {
-        //         productId: item.productId,
-        //         quantity: item.quantity,
-        //         product: product
-        //     }
-        // });
-
-        // // Calculate the total price, total items, and total quantity for the order
-        // const totalPrice = cart.totalPrice;
-        // const totalItems = cart.totalItems;
-        // const totalQuantity = cart.items.reduce((acc, item) => acc + item.quantity, 0);
-
-        // // Create the order
-        // const order = new Order({
-        //     userId,
-        //     items: orderItems,
-        //     totalPrice,
-        //     totalItems,
-        //     totalQuantity,
-        //     // cancellable: true,
-        //     // status: 'pending',
-        // });
 
         const order = new Order({
             userId,

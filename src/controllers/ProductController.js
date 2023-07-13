@@ -66,11 +66,11 @@ const createProduct = async (req, res) => {
                 message: "Currency Format is required"
             });
         }
-        if(!/^₹/.test(currencyFormat)) {
+        if(!["₹"].includes(currencyFormat)) {
             return res.status(400).json({
                 status: false,
-                message: "Currency Format must start with the Rupee symbol (₹)."
-            });
+                message: "Currency Format must be Rupee symbol (₹)."
+            });  
         }
 
         // productImage upload validation
@@ -314,11 +314,11 @@ const updateProduct = async (req, res) => {
 
         // Currency Format
         if(currencyFormat) {
-            if(!/^₹/.test(currencyFormat)) {
+            if(!["₹"].includes(currencyFormat)) {
                 return res.status(400).json({
                     status: false,
-                    message: "Currency Format must start with the Rupee symbol (₹)."
-                });
+                    message: "Currency Format must be Rupee symbol (₹)."
+                });  
             }
         }
 

@@ -366,7 +366,7 @@ const updateUserProfile = async (req, res) => {
         }
 
         if(user._id.toString() !== userIdFromToken) {
-            return res.status(401).json({
+            return res.status(403).json({
                 status: false,
                 message: "Unauthorized! You are not allowed to update this profile"
             });
@@ -391,6 +391,13 @@ const updateUserProfile = async (req, res) => {
                     message: "Please enter a valid email address"
                 });
             }
+            const emailExists = await UserModel.findOne({ email });
+            if(emailExists) {
+                return res.status(400).json({
+                    status: false,
+                    message: "Email address already exists"
+                });
+            }
         }
 
         if(phone) {
@@ -401,13 +408,13 @@ const updateUserProfile = async (req, res) => {
                     message: "Please enter a valid phone number"
                 });
             }
-            // const phoneExists = await UserModel.findOne({ phone });
-            // if(phoneExists) {
-            //     return res.status(400).json({
-            //         status: false,
-            //         message: "Phone number already exists"
-            //     });
-            // }
+            const phoneExists = await UserModel.findOne({ phone });
+            if(phoneExists) {
+                return res.status(400).json({
+                    status: false,
+                    message: "Phone number already exists"
+                });
+            }
         }
 
         if(password) {

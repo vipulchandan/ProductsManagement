@@ -28,12 +28,13 @@ const productSchema = new mongoose.Schema({
     currencyFormat: {
         type: String,
         required: true,
-        validate: {
-            validator: (currencyFormat) => {
-                return /^₹/.test(currencyFormat);
-            },
-            message: "Currency format must start with the Rupee symbol (₹).",
-        }
+        enum: ['₹'],
+        // validate: {
+        //     validator: (currencyFormat) => {
+        //         return /^₹/.test(currencyFormat);
+        //     },
+        //     message: "Currency format must start with the Rupee symbol (₹).",
+        // }
     },
     isFreeShipping: {
         type: Boolean, 

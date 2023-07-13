@@ -284,7 +284,7 @@ const getCartSummary = async (req, res) => {
 
         // Check if the userId in params and in JWT token match
         if(user._id.toString() !== userIdFromToken) {
-            return res.status(401).json({
+            return res.status(403).json({
                 status: false,
                 message: "Unauthorized! You are not the owner of this cart"
             });
@@ -345,7 +345,7 @@ const deleteCart = async (req, res) => {
 
         // Check if the userId in params and in JWT token match
         if(user._id.toString() !== userIdFromToken) {
-            return res.status(401).json({
+            return res.status(403).json({
                 status: false,
                 message: "Unauthorized! You are not the owner of this cart"
             });
