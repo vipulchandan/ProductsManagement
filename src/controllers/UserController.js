@@ -253,7 +253,7 @@ const loginUser  = async (req, res) => {
             }
         )
 
-        res.setHeader('x-api-key', token);
+        // res.setHeader('x-api-key', token);
         
         res.status(200).json({
             status: true,
@@ -309,7 +309,7 @@ const getUserProfile = async (req, res) => {
         // console.log(user._id.toString());
         // console.log(userIdFromToken);
         if(user._id.toString() !== userIdFromToken) {
-            return res.status(401).json({
+            return res.status(403).json({
                 status: false,
                 message: "Unauthorized! You are not the owner of this profile"
             });

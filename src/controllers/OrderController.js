@@ -28,7 +28,7 @@ const createOrder = async (req, res) => {
 
         // Check if the user exists
         const user = await User.findById(userId);
-        if(!userId) {
+        if(!user) {
             return res.status(404).json({
                 status: false,
                 message: "User not found"
@@ -43,7 +43,7 @@ const createOrder = async (req, res) => {
             });
         }
 
-        // Check if the userId is valid
+        // Check if the cartId is valid
         if(!mongoose.Types.ObjectId.isValid(cartId)) {
             return res.status(400).json({
                 status: false,
@@ -135,10 +135,10 @@ const updateOrder = async (req, res) => {
 
         // Check if the user exists
         const user = await User.findById(userId);
-        if(!userId) {
+        if(!user) {
             return res.status(404).json({
                 status: false,
-                message: "User not found"
+                message: "User not found!!"
             });
         }
 
@@ -170,7 +170,7 @@ const updateOrder = async (req, res) => {
 
         // Check if the order exists
         const order = await Order.findById(orderId);
-        if(!orderId) {
+        if(!order) {
             return res.status(404).json({
                 status: false,
                 message: "Order not found"
